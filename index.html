@@ -626,7 +626,7 @@
     inicializarFirebase();
 
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/firebase-messaging-sw.js').catch(function(err) {
+      navigator.serviceWorker.register('./firebase-messaging-sw.js').catch(function(err) {
         console.warn('No se pudo registrar el service worker de notificaciones:', err.message);
       });
     }
