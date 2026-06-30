@@ -440,7 +440,25 @@
     }
   }
 
+  function esIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  }
+
+  function estaInstaladoComoPWA() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
   function activarNotificaciones() {
+    if (esIOS() && !estaInstaladoComoPWA()) {
+      const banner = document.getElementById('bannerNotif');
+      banner.innerHTML = '<div class="banner-notif-texto">' +
+        'Para recibir notificaciones en iPhone, primero agrega esta app a tu pantalla de inicio: toca el botón ' +
+        '<strong>Compartir</strong> (el cuadrito con flecha hacia arriba) en Safari, y elige ' +
+        '<strong>"Agregar a pantalla de inicio"</strong>. Después ábrela desde ese ícono nuevo y vuelve a intentar.' +
+        '</div>';
+      return;
+    }
+
     if (!messaging) {
       alert('Las notificaciones no están disponibles en este navegador o todavía no se ha configurado el servicio.');
       return;
@@ -464,17 +482,26 @@
           localStorage.setItem('crece_notif_activas', 'si');
         }).catch(function(err) {
           console.error('Error registrando token:', err);
+          alert('Hubo un problema activando las notificaciones. Intenta de nuevo en unos minutos.');
         });
       }).catch(function(err) {
         console.error('Error obteniendo token de notificaciones:', err);
+        alert('Hubo un problema activando las notificaciones. Intenta de nuevo en unos minutos.');
       });
     });
   }
 
   function revisarEstadoNotificaciones() {
     const yaActivas = localStorage.getItem('crece_notif_activas') === 'si';
+    if (yaActivas) return;
+
+    if (esIOS() && !estaInstaladoComoPWA()) {
+      document.getElementById('bannerNotif').style.display = 'flex';
+      return;
+    }
+
     const soportaNotificaciones = 'Notification' in window && messaging;
-    if (!yaActivas && soportaNotificaciones && Notification.permission !== 'denied') {
+    if (soportaNotificaciones && Notification.permission !== 'denied') {
       document.getElementById('bannerNotif').style.display = 'flex';
     }
   }
